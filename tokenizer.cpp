@@ -5,7 +5,7 @@
 #include "tokenizer.h"
 
 Tokenizer::Tokenizer(const std::string& infile_name)
-                    : _input(infile_name) {
+                    : _input(infile_name), _charsRead(0) {
   if (!_input) {
     std::cerr << "Failed to open input file '" << infile_name
 	      << "'." << std::endl;
@@ -109,12 +109,8 @@ void Tokenizer::getLineOfTokens(std::vector<Token> &tokens) {
 
   std::string line;
   std::getline(_input, line);
+  _charsRead = line.size();
   tokens.clear();
-
-  // Do nothing if we didn't read any data
-  if (hasError() || isEmpty()) {
-    return;
-  }
 
   size_t start = 0;
   for (size_t end = 0; end <= line.size(); end++) {

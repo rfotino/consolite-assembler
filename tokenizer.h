@@ -32,7 +32,7 @@ class Tokenizer {
  public:
   Tokenizer(const std::string& infile_name);
   void getLineOfTokens(std::vector<Token> &tokens);
-  bool isEmpty() { return _input.eof(); }
+  bool isEmpty() { return _input.eof() && 0 == _charsRead; }
   bool hasError() { return !_input; }
   void reset();
 
@@ -43,6 +43,7 @@ class Tokenizer {
   void _getData(const std::string& text, std::string& data);
   void _addToken(std::vector<Token>& tokens, const std::string& text);
   std::ifstream _input;
+  int _charsRead;
 };
 
 #endif
