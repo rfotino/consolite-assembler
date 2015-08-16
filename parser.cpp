@@ -178,6 +178,11 @@ bool Parser::firstPass() {
           break;
         }
       }
+      // Pad data to 4 bytes so that instructions that
+      // follow are aligned correctly
+      while (0 != byte_pos % 4) {
+        byte_pos++;
+      }
       break;
     case LABELDECL:
       {
