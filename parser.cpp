@@ -70,10 +70,19 @@ bool Parser::firstPass() {
 }
 
 bool Parser::secondPass() {
+  // Reset the tokenizer to the start of the input
+  // file so that we can do a second pass through it
   _tokenizer->reset();
   if (_tokenizer->hasError()) {
     std::cerr << "Error resetting input stream to start of file for 2nd pass."
 	      << std::endl;
+    return false;
+  }
+  // Opens up the output file and checks that it succeeded
+  _output.open(_outfileName);
+  if (!_output.good()) {
+    std::cerr << "Error opening file " << _outfileName
+	      << " for output." << std::endl;
     return false;
   }
   return true;
