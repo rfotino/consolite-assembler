@@ -1,4 +1,5 @@
 #include <iostream>
+#include "defs.h"
 #include "parser.h"
 using namespace std;
 
