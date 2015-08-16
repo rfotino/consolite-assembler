@@ -243,6 +243,7 @@ bool Parser::secondPass() {
               << std::endl;
     return false;
   }
+
   // Opens up the output file and checks that it succeeded
   _output.open(_outfileName);
   if (!_output.good()) {
@@ -250,5 +251,71 @@ bool Parser::secondPass() {
               << " for output." << std::endl;
     return false;
   }
+
+  // Read tokens again line by line and output machine code
+  std::vector<Token> tokens;
+  while (true) {
+    // Get the next line of tokens
+    _tokenizer->getLineOfTokens(tokens);
+    // If there is an error or the tokenizer is
+    // empty, break out of the loop
+    if (_tokenizer->isEmpty() || _tokenizer->hasError()) {
+      break;
+    }
+    // Skip empty lines with no tokens
+    if (0 == tokens.size()) {
+      continue;
+    }
+    // For the second pass we only care about lines starting
+    // with an opcode or data.
+    if (OPCODE == tokens[0].getType()) {
+      // Output the 4 bytes for this instruction
+      size_t bytes_output = 0;
+      for (auto token = tokens.begin(); token != tokens.end(); token++) {
+        switch (token->getType()) {
+        case OPCODE:
+          bytes_output += 1;
+          _output << opcodes.at(token->getData());
+          break;
+        case REGISTER:
+          bytes_output += 1;
+          _output << registers.at(token->getData());
+          break;
+        case DATA:
+          bytes_output += 2;
+          if (1 == token->getSize()) {
+            _output << '\0';
+          }
+          _output << token->getData();
+          break;
+        case LABELREF:
+          bytes_output += 2;
+          {
+            unsigned address = _labels[token->getData()];
+            std::string addr_str;
+            addr_str.push_back((address >> 8) & 0xff);
+            addr_str.push_back(address & 0xff);
+            _output << addr_str;
+          }
+          break;
+        case LABELDECL:
+        case UNKNOWN:
+          break;
+        }
+      }
+      // Output any padding bytes necessary
+      while (bytes_output < 4) {
+        _output << '\0';
+        bytes_output++;
+      }
+    } else if (DATA == tokens[0].getType()) {
+      // Output all data directly to output
+      for (auto token = tokens.begin(); token != tokens.end(); token++) {
+        const std::string data = token->getData();
+        _output << data;
+      }
+    }
+  }
+
   return true;
 }
