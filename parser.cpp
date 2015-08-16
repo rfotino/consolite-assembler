@@ -87,6 +87,19 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
       // the full list of label declarations.
       _labelRefs.push_back(make_pair(tokens[2].getData(), line));
     }
+  } else if ("MOVI" == opcode) {
+    if (3 != tokens.size() ||
+        REGISTER != tokens[1].getType() ||
+        DATA != tokens[2].getType()) {
+      std::cerr << "Error: Invalid syntax for " << opcode
+                << ", expected " << opcode << " DEST NUM on line "
+                << line << "." << std::endl;
+      return false;
+    } else if (2 < tokens[2].getSize()) {
+      std::cerr << "Error: Data too large, max of 16 bits on line "
+                << line << "." << std::endl;
+      return false;
+    }
   }
   return true;
 }
