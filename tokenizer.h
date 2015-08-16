@@ -19,9 +19,9 @@ class Token {
   Token(TokenType type, const std::string& data)
        : _type(type), _data(data) { }
 
-  TokenType getType() { return _type; }
-  std::string getData() { return _data; }
-  size_t getSize() { return _data.size(); }
+  TokenType getType() const { return _type; }
+  std::string getData() const { return _data; }
+  size_t getSize() const { return _data.size(); }
 
  private:
   TokenType _type;

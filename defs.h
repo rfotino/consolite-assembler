@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-const std::map<std::string, unsigned char> opcodes = {
+const static std::map<std::string, char> opcodes = {
   { "NOP",   0x00 },
   { "INPUT", 0x01 },
   { "CALL",  0x02 },
@@ -47,7 +47,7 @@ const std::map<std::string, unsigned char> opcodes = {
   { "JNS",   0x3F }
 };
 
-const std::map<std::string, unsigned char> registers = {
+const static std::map<std::string, unsigned char> registers = {
   { "SP",  0x0 },
   { "FP",  0x1 },
   { "A",   0x2 },

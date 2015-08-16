@@ -8,7 +8,7 @@ Tokenizer::Tokenizer(const std::string& infile_name)
                     : _input(infile_name), _charsRead(0) {
   if (!_input) {
     std::cerr << "Failed to open input file '" << infile_name
-	      << "'." << std::endl;
+              << "'." << std::endl;
   }
 }
 
@@ -69,7 +69,7 @@ void Tokenizer::_getData(const std::string& text, std::string& data) {
 }
 
 void Tokenizer::_addToken(std::vector<Token>& tokens,
-			  const std::string& text) {
+                          const std::string& text) {
   // Find the type of token
   if (opcodes.find(text) != opcodes.end()) {
     // The token is an opcode
@@ -86,7 +86,7 @@ void Tokenizer::_addToken(std::vector<Token>& tokens,
     Token t(DATA, data);
     tokens.push_back(t);
   } else if (':' == text[text.size() - 1] &&
-	     _isValidLabel(text.substr(0, text.size() - 1))) {
+             _isValidLabel(text.substr(0, text.size() - 1))) {
     // The token ends in :, it is a label declaration
     std::string label = text.substr(0, text.size() - 1);
     Token t(LABELDECL, label);
@@ -118,8 +118,8 @@ void Tokenizer::getLineOfTokens(std::vector<Token> &tokens) {
       // We are on a token boundary
       size_t token_size = end - start;
       if (0 != token_size) {
-	std::string token_text = line.substr(start, token_size);
-	_addToken(tokens, token_text);
+        std::string token_text = line.substr(start, token_size);
+        _addToken(tokens, token_text);
       }
       start = end + 1;
     }
