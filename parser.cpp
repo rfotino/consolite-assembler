@@ -63,8 +63,8 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
                 << ", expected " << opcode << " [NUM] on line "
                 << line << "." << std::endl;
       return false;
-    } else if (2 < tokens[1].getSize()) {
-      std::cerr << "Error: Data too large, max of 16 bits on line "
+    } else if (1 < tokens[1].getSize()) {
+      std::cerr << "Error: Data too large, max of 8 bits on line "
                 << line << "." << std::endl;
       return false;
     }
@@ -269,6 +269,7 @@ bool Parser::secondPass() {
     // For the second pass we only care about lines starting
     // with an opcode or data.
     if (OPCODE == tokens[0].getType()) {
+      const std::string opcode = tokens[0].getData();
       // Output the 4 bytes for this instruction
       size_t bytes_output = 0;
       for (auto token = tokens.begin(); token != tokens.end(); token++) {
@@ -282,9 +283,16 @@ bool Parser::secondPass() {
           _output << registers.at(token->getData());
           break;
         case DATA:
-          bytes_output += 2;
-          if (1 == token->getSize()) {
-            _output << '\0';
+          // The RET instruction has only 1 byte of data following
+          // it. All other instructions with data have 2 bytes,
+          // and must be padded if they are only using one.
+          if ("RET" == opcode) {
+            bytes_output += 1;
+          } else {
+            bytes_output += 2;
+            if (1 == token->getSize()) {
+              _output << '\0';
+            }
           }
           _output << token->getData();
           break;
@@ -309,10 +317,18 @@ bool Parser::secondPass() {
         bytes_output++;
       }
     } else if (DATA == tokens[0].getType()) {
-      // Output all data directly to output
+      // Directly output all data, in big endian order
+      size_t data_size = 0;
       for (auto token = tokens.begin(); token != tokens.end(); token++) {
         const std::string data = token->getData();
+        data_size += token->getSize();
         _output << data;
+      }
+      // Make sure to pad the data to a multiple of 4 bytes,
+      // so that any instructions that follow are aligned properly.
+      while (0 != data_size % 4) {
+        data_size++;
+        _output << '\0';
       }
     }
   }
