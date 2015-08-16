@@ -7,9 +7,8 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
   const std::string opcode = tokens[0].getData();
   if ("NOP" == opcode) {
     if (1 < tokens.size()) {
-      std::cerr << "Error: Unknown token '" << tokens[1].getData()
-                << "' after " << opcode << " on line " << line
-                << "." << std::endl;
+      std::cerr << "Error: Invalid syntax, unknown token after "
+                << opcode << " on line " << line << "." << std::endl;
       return false;
     }
   } else if ("INPUT" == opcode || "LOAD" == opcode || "MOV" == opcode ||
@@ -181,20 +180,22 @@ bool Parser::firstPass() {
       }
       break;
     case LABELDECL:
-      if (1 == tokens.size()) {
-        std::string label = tokens[0].getData();
-        if (_labels.find(label) == _labels.end()) {
-          _labels[label] = byte_pos;
+      {
+        const std::string label = tokens[0].getData();
+        if (1 == tokens.size()) {
+          if (_labels.find(label) == _labels.end()) {
+            _labels[label] = byte_pos;
+          } else {
+            error = true;
+            std::cerr << "Error: Duplicate label '" << label
+                      << "' on line " << line << "." << std::endl;
+          }
         } else {
           error = true;
-          std::cerr << "Error: Duplicate label '" << label
-                    << "' on line " << line << "." << std::endl;
+          std::cerr << "Error: Invalid syntax, label '" << label
+                    << "' must be by itself on line " << line
+                    << "." << std::endl;
         }
-      } else {
-        error = true;
-        std::cerr << "Error: Unknown token '" << tokens[1].getData()
-             << "', label must be by itself on line "
-             << line << "." << std::endl;
       }
       break;
     case LABELREF:
@@ -207,10 +208,9 @@ bool Parser::firstPass() {
     }
   }
 
-  // If there is no error yet, check that all of the label
-  // references have a corresponding label. If not, that is another
-  // error.
   if (!error) {
+    // Check that all of the label references have a corresponding
+    // label. If not, that is another error.
     for (auto ref = _labelRefs.begin(); ref != _labelRefs.end(); ref++) {
       std::string ref_label = ref->first;
       unsigned ref_line = ref->second;
@@ -220,6 +220,14 @@ bool Parser::firstPass() {
                   << ref_label << "' on line " << ref_line
                   << "." << std::endl;
       }
+    }
+    // Check if the total size of the output will be too large,
+    // which would be another error.
+    if (MAX_OUTPUT_SIZE < byte_pos) {
+      error = true;
+      std::cerr << "Error: Output would be " << byte_pos
+                << "bytes, which is larger than the maximum output size "
+                << MAX_OUTPUT_SIZE << "." << std::endl;
     }
   }
 

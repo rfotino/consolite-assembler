@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 
+#define MAX_OUTPUT_SIZE 65536
+
 const static std::map<std::string, char> opcodes = {
   { "NOP",   0x00 },
   { "INPUT", 0x01 },
