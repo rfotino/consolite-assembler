@@ -1,10 +1,9 @@
 #include <iostream>
 #include "tokenizer.h"
 #include "parser.h"
-using namespace std;
 
 void usage(char *program_name) {
-  cout << "Usage: " << program_name << " SRC DEST" << endl;
+  std::cout << "Usage: " << program_name << " SRC DEST" << std::endl;
 }
 
 int main(int argc, char **argv) {

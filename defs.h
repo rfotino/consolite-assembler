@@ -1,11 +1,10 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#include <string>
 #include <map>
 
-#define MAXLINESIZE 1024
-
-const std::map<char const *, unsigned char> opcodes = {
+const std::map<std::string, unsigned char> opcodes = {
   { "NOP",   0x00 },
   { "INPUT", 0x01 },
   { "CALL",  0x02 },
@@ -48,7 +47,7 @@ const std::map<char const *, unsigned char> opcodes = {
   { "JNS",   0x3F }
 };
 
-const std::map<char const *, unsigned char> registers = {
+const std::map<std::string, unsigned char> registers = {
   { "SP",  0x0 },
   { "FP",  0x1 },
   { "A",   0x2 },

@@ -3,34 +3,23 @@
 #include <string.h>
 #include "defs.h"
 #include "tokenizer.h"
-using namespace std;
 
-Token::Token(TokenType type, char *data, size_t size)
-            : _type(type), _size(size) {
-  _data = new char[_size];
-  memcpy(_data, data, _size);
-}
-
-Token::~Token() {
-  delete[] _data;
-}
-
-Tokenizer::Tokenizer(char *infile_name)
-                    : _input(infile_name), _error(false) {
+Tokenizer::Tokenizer(const std::string& infile_name)
+                    : _input(infile_name) {
   if (!_input) {
-    cerr << "Failed to open input file '" << infile_name << "'." << endl;
-    _error = true;
+    std::cerr << "Failed to open input file '" << infile_name
+	      << "'." << std::endl;
   }
 }
 
-bool Tokenizer::_isValidLabel(char const *label, const size_t label_size) {
+bool Tokenizer::_isValidLabel(const std::string& label) {
   // Labels must have nonzero length and cannot start with a digit
-  if (0 == label_size || isdigit(label[0])) {
+  if (0 == label.size() || isdigit(label[0])) {
     return false;
   }
   // All characters in label must be either alphanumeric or
   // the underscore character.
-  for (size_t i = 0; i < label_size; i++) {
+  for (size_t i = 0; i < label.size(); i++) {
     if ('_' != label[i] && !isalnum(label[i])) {
       return false;
     }
@@ -38,14 +27,14 @@ bool Tokenizer::_isValidLabel(char const *label, const size_t label_size) {
   return true;
 }
 
-bool Tokenizer::_isValidData(char const *text, const size_t text_size) {
+bool Tokenizer::_isValidData(const std::string& text) {
   // Data must start with '0x' and must be followed by at least
   // one digit.
-  if (text_size < 3 || '0' != text[0] || 'x' != text[1]) {
+  if (text.size() < 3 || '0' != text[0] || 'x' != text[1]) {
     return false;
   }
   // Data after the initial '0x' must be hexadecimal
-  for (size_t i = 2; i < text_size; i++) {
+  for (size_t i = 2; i < text.size(); i++) {
     if (-1 == _getHexVal(text[i])) {
       return false;
     }
@@ -53,7 +42,7 @@ bool Tokenizer::_isValidData(char const *text, const size_t text_size) {
   return true;
 }
 
-char Tokenizer::_getHexVal(char c) {
+char Tokenizer::_getHexVal(const char& c) {
   if ('0' <= c && c <= '9') {
     return c - '0';
   } else if ('a' <= c && c <= 'f') {
@@ -65,83 +54,87 @@ char Tokenizer::_getHexVal(char c) {
   }
 }
 
-void Tokenizer::_getData(char const *text, const size_t text_size,
-			 char *data, size_t &data_size) {
-  data_size = (text_size - 1) / 2;
+void Tokenizer::_getData(const std::string& text, std::string& data) {
   size_t i;
-  if (text_size & 1) {
-    data[0] = _getHexVal(text[2]);
+  if (text.size() & 1) {
+    data.push_back(_getHexVal(text[2]));
     i = 3;
   } else {
-    data[0] = (_getHexVal(text[2]) << 4) | _getHexVal(text[3]);
+    data.push_back((_getHexVal(text[2]) << 4) | _getHexVal(text[3]));
     i = 4;
   }
-  for (int j = 1; i < text_size; i += 2, j++) {
-    data[j] = (_getHexVal(text[i]) << 4) | _getHexVal(text[i+1]);
+  for (; i < text.size(); i += 2) {
+    data.push_back((_getHexVal(text[i]) << 4) | _getHexVal(text[i+1]));
   }
 }
 
-void Tokenizer::_addToken(vector<Token> &tokens, char *text) {
-  size_t text_size = strlen(text);
+void Tokenizer::_addToken(std::vector<Token>& tokens,
+			  const std::string& text) {
+  // Find the type of token
   if (opcodes.find(text) != opcodes.end()) {
     // The token is an opcode
-    Token t(OPCODE, text, text_size + 1);
+    Token t(OPCODE, text);
     tokens.push_back(t);
   } else if (registers.find(text) != registers.end()) {
     // The token is a register
-    Token t(REGISTER, text, text_size + 1);
+    Token t(REGISTER, text);
     tokens.push_back(t);
-  } else if (_isValidData(text, text_size)) {
+  } else if (_isValidData(text)) {
     // The token is data
-    char data[MAXLINESIZE];
-    size_t data_size;
-    _getData(text, text_size, data, data_size);
-    Token t(DATA, data, data_size);
+    std::string data;
+    _getData(text, data);
+    Token t(DATA, data);
     tokens.push_back(t);
-  } else if (':' == text[text_size - 1] &&
-	     _isValidLabel(text, text_size - 1)) {
+  } else if (':' == text[text.size() - 1] &&
+	     _isValidLabel(text.substr(0, text.size() - 1))) {
     // The token ends in :, it is a label declaration
-    text[text_size - 1] = '\0';
-    Token t(LABELDECL, text, text_size);
+    std::string label = text.substr(0, text.size() - 1);
+    Token t(LABELDECL, label);
     tokens.push_back(t);
-  } else if (_isValidLabel(text, text_size)) {
+  } else if (_isValidLabel(text)) {
     // The token is a label reference
-    Token t(LABELREF, text, text_size + 1);
+    Token t(LABELREF, text);
     tokens.push_back(t);
   } else {
     // The token is of an unknown type
-    Token t(UNKNOWN, text, text_size);
+    Token t(UNKNOWN, text);
     tokens.push_back(t);
   }
 }
 
-void Tokenizer::getLineOfTokens(vector<Token> &tokens) {
-  if (_error) {
+void Tokenizer::getLineOfTokens(std::vector<Token> &tokens) {
+  if (hasError()) {
     return;
   }
 
-  char line[MAXLINESIZE+1];
-  size_t line_size;
-  _input.getline(line, MAXLINESIZE+1);
-  line_size = _input.gcount();
+  std::string line;
+  std::getline(_input, line);
   tokens.clear();
 
+  // Do nothing if we didn't read any data
+  if (hasError() || isEmpty()) {
+    return;
+  }
+
   size_t start = 0;
-  for (size_t end = 0; end <= line_size; end++) {
-    if (end == line_size || ';' == line[end] || ' ' == line[end]) {
+  for (size_t end = 0; end <= line.size(); end++) {
+    if (end == line.size() || ';' == line[end] || ' ' == line[end]) {
       // We are on a token boundary
-      size_t token_size = end - start - 1;
+      size_t token_size = end - start;
       if (0 != token_size) {
-	char token_text[sizeof(line)];
-	memcpy(token_text, &line[start], token_size);
-	token_text[token_size] = '\0';
+	std::string token_text = line.substr(start, token_size);
 	_addToken(tokens, token_text);
       }
-      start = end;
+      start = end + 1;
     }
     // If we're at the start of a comment, end tokenization
-    if (end != line_size && ';' == line[end]) {
+    if (end != line.size() && ';' == line[end]) {
       break;
     }
   }
+}
+
+void Tokenizer::reset() {
+  _input.clear();
+  _input.seekg(0, std::ios::beg);
 }

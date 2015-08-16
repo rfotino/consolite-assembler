@@ -1,6 +1,7 @@
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
 
+#include <string>
 #include <fstream>
 #include <vector>
 
@@ -15,35 +16,33 @@ enum TokenType {
 
 class Token {
  public:
-  Token(TokenType type, char *data, size_t size);
-  ~Token();
+  Token(TokenType type, const std::string& data)
+       : _type(type), _data(data) { }
 
   TokenType getType() { return _type; }
-  char * getData() { return _data; }
-  size_t getSize() { return _size; }
+  std::string getData() { return _data; }
+  size_t getSize() { return _data.size(); }
 
  private:
   TokenType _type;
-  char *_data;
-  size_t _size;
+  std::string _data;
 };
 
 class Tokenizer {
  public:
-  Tokenizer(char *infile_name);
+  Tokenizer(const std::string& infile_name);
   void getLineOfTokens(std::vector<Token> &tokens);
   bool isEmpty() { return _input.eof(); }
-  bool hasError() { return _error; }
+  bool hasError() { return !_input; }
+  void reset();
 
  private:
-  bool _isValidLabel(char const *label, const size_t label_size);
-  bool _isValidData(char const *text, const size_t text_size);
-  char _getHexVal(char c);
-  void _getData(char const *text, const size_t text_size,
-		char *data, size_t &data_size);
-  void _addToken(std::vector<Token> &tokens, char *text);
+  bool _isValidLabel(const std::string& label);
+  bool _isValidData(const std::string& text);
+  char _getHexVal(const char& c);
+  void _getData(const std::string& text, std::string& data);
+  void _addToken(std::vector<Token>& tokens, const std::string& text);
   std::ifstream _input;
-  bool _error;
 };
 
 #endif
