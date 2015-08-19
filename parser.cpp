@@ -5,7 +5,7 @@
 bool Parser::_validateInstruction(const std::vector<Token>& tokens,
                                   const unsigned& line) {
   const std::string opcode = tokens[0].getData();
-  if ("NOP" == opcode) {
+  if ("NOP" == opcode || "TIMERST" == opcode) {
     if (1 < tokens.size()) {
       std::cerr << "Error: Invalid syntax, unknown token after "
                 << opcode << " on line " << line << "." << std::endl;
@@ -16,7 +16,7 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
              "DIV" == opcode || "AND" == opcode || "OR" == opcode ||
              "XOR" == opcode || "SHL" == opcode || "SHRA" == opcode ||
              "SHRL" == opcode || "CMP" == opcode || "TST" == opcode ||
-             "PIXEL" == opcode) {
+             "PIXEL" == opcode || "STOR" == opcode) {
     if (3 != tokens.size() ||
         REGISTER != tokens[1].getType() ||
         REGISTER != tokens[2].getType()) {
@@ -26,7 +26,7 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
       return false;
     }
   } else if ("PUSH" == opcode || "POP" == opcode || "COLOR" == opcode ||
-             "JMP" == opcode) {
+             "JMP" == opcode || "TIME" == opcode || "RND" == opcode) {
     if (2 != tokens.size() ||
         REGISTER != tokens[1].getType()) {
       std::cerr << "Error: Invalid syntax for " << opcode
@@ -68,7 +68,7 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
                 << line << "." << std::endl;
       return false;
     }
-  } else if ("LOADI" == opcode) {
+  } else if ("LOADI" == opcode || "STORI" == opcode) {
     if (3 != tokens.size() ||
         REGISTER != tokens[1].getType() ||
         (DATA != tokens[2].getType() &&
