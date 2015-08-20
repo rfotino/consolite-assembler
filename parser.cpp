@@ -63,7 +63,7 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
                 << ", expected " << opcode << " [NUM] on line "
                 << line << "." << std::endl;
       return false;
-    } else if (1 < tokens[1].getSize()) {
+    } else if (2 == tokens.size() && 1 < tokens[1].getSize()) {
       std::cerr << "Error: Data too large, max of 8 bits on line "
                 << line << "." << std::endl;
       return false;
