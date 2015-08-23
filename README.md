@@ -37,3 +37,7 @@ something like `cat FILE1 FILE2 FILE3 > FILE4 && ./asm FILE4 DEST` to
 achieve this.
 * The maximum output filesize is limited to 64KiB, because Consolite must
 load the entire binary into main memory before it can start executing.
+
+## Documentation
+
+* [Documentation for the Consolite assembly language](docs/assembly.md)
