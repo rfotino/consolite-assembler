@@ -7,8 +7,8 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
   const std::string opcode = tokens[0].getData();
   if ("NOP" == opcode || "TIMERST" == opcode) {
     if (1 < tokens.size()) {
-      std::cerr << "Error: Invalid syntax, unknown token after "
-                << opcode << " on line " << line << "." << std::endl;
+      std::cerr << "Error: Invalid syntax for " << opcode
+                << ", must be by itself on line " << line << "." << std::endl;
       return false;
     }
   } else if ("INPUT" == opcode || "LOAD" == opcode || "MOV" == opcode ||
@@ -21,7 +21,7 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
         REGISTER != tokens[1].getType() ||
         REGISTER != tokens[2].getType()) {
       std::cerr << "Error: Invalid syntax for " << opcode
-                << ", expected " << opcode << " DEST SRC on line "
+                << ", expected " << opcode << " REG1 REG2 on line "
                 << line << "." << std::endl;
       return false;
     }
@@ -44,11 +44,11 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
         (DATA != tokens[1].getType() &&
          LABELREF != tokens[1].getType())) {
       std::cerr << "Error: Invalid syntax for " << opcode
-                << ", expected " << opcode << " LABEL|ADDR on line "
+                << ", expected " << opcode << " LABEL|DATA on line "
                 << line << "." << std::endl;
       return false;
     } else if (DATA == tokens[1].getType() && 2 < tokens[1].getSize()) {
-      std::cerr << "Error: Address too large, max of 16 bits on line "
+      std::cerr << "Error: Data too large, max of 16 bits on line "
                 << line << "." << std::endl;
       return false;
     } else if (LABELREF == tokens[1].getType()) {
@@ -60,7 +60,7 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
     if (2 < tokens.size() ||
         (2 == tokens.size() && DATA != tokens[1].getType())) {
       std::cerr << "Error: Invalid syntax for " << opcode
-                << ", expected " << opcode << " [NUM] on line "
+                << ", expected " << opcode << " [DATA] on line "
                 << line << "." << std::endl;
       return false;
     } else if (2 == tokens.size() && 1 < tokens[1].getSize()) {
@@ -74,7 +74,7 @@ bool Parser::_validateInstruction(const std::vector<Token>& tokens,
         (DATA != tokens[2].getType() &&
          LABELREF != tokens[2].getType())) {
       std::cerr << "Error: Invalid syntax for " << opcode
-                << ", expected " << opcode << " DEST LABEL|DATA on line "
+                << ", expected " << opcode << " REG LABEL|DATA on line "
                 << line << "." << std::endl;
       return false;
     } else if (DATA == tokens[2].getType() && 2 < tokens[2].getSize()) {
@@ -147,8 +147,8 @@ bool Parser::firstPass() {
       break;
     case REGISTER:
       error = true;
-      std::cerr << "Error: Register '" << tokens[0].getData()
-                << "' at start of instruction on line " << line
+      std::cerr << "Error: REG '" << tokens[0].getData()
+                << "' not allowed at start of instruction on line " << line
                 << "." << std::endl;
       break;
     case DATA:
@@ -160,7 +160,7 @@ bool Parser::firstPass() {
         } else {
           error = true;
           std::cerr << "Error: Unknown token '" << token->getData()
-               << "', expected data on line " << line
+               << "', expected DATA on line " << line
                << "." << std::endl;
           break;
         }
@@ -179,23 +179,22 @@ bool Parser::firstPass() {
             _labels[label] = byte_pos;
           } else {
             error = true;
-            std::cerr << "Error: Duplicate label '" << label
+            std::cerr << "Error: Duplicate LABEL '" << label
                       << "' on line " << line << "." << std::endl;
           }
         } else {
           error = true;
-          std::cerr << "Error: Invalid syntax, label '" << label
+          std::cerr << "Error: Invalid syntax, LABEL '" << label
                     << "' must be by itself on line " << line
                     << "." << std::endl;
         }
       }
       break;
     case LABELREF:
+    case UNKNOWN:
       error = true;
       std::cerr << "Error: Unknown token '" << tokens[0].getData()
                 << "' on line " << line << "." << std::endl;
-      break;
-    case UNKNOWN:
       break;
     }
   }
@@ -208,7 +207,7 @@ bool Parser::firstPass() {
       unsigned ref_line = ref->second;
       if (_labels.find(ref_label) == _labels.end()) {
         error = true;
-        std::cerr << "Error: Could not find label for reference '"
+        std::cerr << "Error: Could not find LABEL for reference '"
                   << ref_label << "' on line " << ref_line
                   << "." << std::endl;
       }
@@ -218,8 +217,8 @@ bool Parser::firstPass() {
     if (MAX_OUTPUT_SIZE < byte_pos) {
       error = true;
       std::cerr << "Error: Output would be " << byte_pos
-                << "bytes, which is larger than the maximum output size "
-                << MAX_OUTPUT_SIZE << "." << std::endl;
+                << "bytes, which is larger than the maximum output size of "
+                << MAX_OUTPUT_SIZE << " bytes." << std::endl;
     }
   }
 
