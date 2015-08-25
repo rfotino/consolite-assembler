@@ -1,3 +1,8 @@
+/**
+ * Consolite Assembler
+ * Copyright (c) 2015 Robert Fotino, All Rights Reserved
+ */
+
 #include <iostream>
 #include <cctype>
 #include <string.h>

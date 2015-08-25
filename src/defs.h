@@ -1,3 +1,8 @@
+/**
+ * Consolite Assembler
+ * Copyright (c) 2015 Robert Fotino, All Rights Reserved
+ */
+
 #ifndef DEFS_H
 #define DEFS_H
 

@@ -1,3 +1,8 @@
+/**
+ * Consolite Assembler
+ * Copyright (c) 2015 Robert Fotino, All Rights Reserved
+ */
+
 #include <iostream>
 #include "defs.h"
 #include "parser.h"
@@ -217,7 +222,7 @@ bool Parser::firstPass() {
     if (MAX_OUTPUT_SIZE < byte_pos) {
       error = true;
       std::cerr << "Error: Output would be " << byte_pos
-                << "bytes, which is larger than the maximum output size of "
+                << " bytes, which is larger than the maximum output size of "
                 << MAX_OUTPUT_SIZE << " bytes." << std::endl;
     }
   }
