@@ -41,3 +41,7 @@ load the entire binary into main memory before it can start executing.
 ## Documentation
 
 * [Documentation for the Consolite assembly language](docs/assembly.md)
+
+## Copyright
+
+Copyright (c) 2015 Robert Fotino, All Rights Reserved
