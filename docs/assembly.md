@@ -114,7 +114,8 @@ unless otherwise indicated.
 ### Load and Store
 
 * `MOV REG1 REG2` - Copies the data in `REG2` to `REG1`.
-* `MOVI REG1 LABEL|DATA` - Moves the literal address or data given by
+* `MOVI REG1 LABEL|DATA` - Copies the the address of `LABEL` or the literal
+`DATA` to `REG1`.
 * `LOAD REG1 REG2` - Loads the 2 bytes stored at location `REG2` and stores them
 in `REG1`.
 * `LOADI REG1 LABEL|DATA` - Loads the 2 bytes stored at the address given
@@ -142,7 +143,7 @@ and decrements the stack pointer.
 * `OR REG1 REG2` - Stores the value of `REG1 | REG2` in `REG1`.
 * `XOR REG1 REG2` - Stores the value of `REG1 ^ REG2` in `REG1`.
 * `SHL REG1 REG2` - Stores the value of `REG1 << REG2` in `REG1`.
-* `SHRA REG1 REG2` - Stores the value of REG1 >> REG2` in `REG1`, where `>>`
+* `SHRA REG1 REG2` - Stores the value of `REG1 >> REG2` in `REG1`, where `>>`
 is an arithmetic right shift, meaning it will sign-extend `REG1`.
 * `SHRL REG1 REG2` - Stores the value of `REG1 >> REG2` in `REG1`, where `>>`
 is a logical right shift, meaning it will not sign-extend `REG1`.
